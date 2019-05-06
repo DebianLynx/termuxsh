@@ -3,6 +3,7 @@ SERVICE_NAME="cow"
 DIR="/data/data/com.termux/files/home"
 PIDDIR="/data/data/com.termux/files/home/run"
 LOGDIR="/data/data/com.termux/files/home/log"
+CMD="./cow"
 
 
 PIDFILE="${PIDDIR}/${SERVICE_NAME}.PID"
@@ -35,7 +36,7 @@ start() {
   echo "Starting service ${SERVICE_NAME} ..."
   
   cd $DIR
-  ./cow  >${LOGFILE} 2>&1 &
+  ${CMD}  >${LOGFILE} 2>&1 &
   # >/dev/null 2>&1 表示不输出stdout和stderr
   # 最后一个 & 表示整个命令在后台执行
   PID=$!  # 获取本shell启动的最后一个后台程序的进程号（PID）
