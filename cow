@@ -1,0 +1,134 @@
+#!/bin/bash
+SERVICE_NAME="cow"
+RETVAL=0
+PID=-1
+PIDFILE="/data/data/com.termux/files/home/run/${SERVICE_NAME}.PID"
+DIR="/data/data/com.termux/files/home"
+start() {
+ if [ -f $PIDFILE ]; then
+    PID=`cat $PIDFILE`
+    # 检查pid file是否存在pid
+    if [ -z $PID ] ; then
+      echo "No effective pid but pidfile exists!"
+      echo "deleting pidfile"  
+      rm -f $PIDFILE
+    else
+      # 检查pid对应的进程是否还存在
+      if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
+        echo "Process dead but pidfile exist"
+        echo "it means process was closed unnormally"
+        echo "deleting pidfile"
+        rm -f $PIDFILE
+      else
+        echo "Service is Running"
+        exit
+      fi
+    fi
+  else
+    echo "Service not running"
+  fi
+  echo "Starting service ${SERVICE_NAME} ..."
+  # >/dev/null 2>&1 表示不输出stdout和stderr
+  # 最后一个 & 表示整个命令在后台执行
+  cd $DIR
+  mkdir $DIR/log
+  ./cow  >$DIR/log/${SERVICE_NAME}.log 2>&1 &
+  PID=$!  # 获取本shell启动的最后一个后台程序的进程号（PID）
+  if [ -z ${PID} ]; then # 检查有没有获取到pid
+    echo "unable to start the process"
+    echo "Failed to get the process id, exit!"
+    exit
+  else
+    echo "Starting successfully, whose pid is ${PID}"
+  fi
+  touch $PIDFILE
+  echo ${PID} > ${PIDFILE}
+
+ if [ -f $PIDFILE ]; then
+    PID=`cat $PIDFILE`
+    # 检查pid file是否存在pid
+    if [ -z $PID ] ; then
+      echo "oh no it's a unknown failure"
+      exit
+    else
+      # 检查pid对应的进程是否还存在
+      if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
+      echo "but process dead after start up"
+      exit
+      else
+        exit
+      fi
+    fi
+  else
+    echo "you don't have enough access to /var/run"
+    exit
+  fi
+
+}
+stop() {
+  if [ -f $PIDFILE ]; then # 检查PIDFILE是否存在
+    PID=`cat ${PIDFILE}`
+    if [ -z $PID ]; then # 检查PID是否存在于PIDFILE中
+      echo "PIDFILE $PIDFILE is empty !"
+      echo "deleting pidflie"
+      rm -f $PIDFILE
+      stop
+    fi
+    # 检查该进程是否存在
+    if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
+      echo "Process dead but pidfile exists!"
+      echo "deleting pidflie"
+      rm -f $PIDFILE
+      stop
+    else
+      kill -9 $PID
+      echo "service is running"
+      echo "Stopping service successfully , whose pid is $PID"
+      rm -f $PIDFILE
+    fi
+  else
+    echo "$SERVICE_NAME is not running"
+  fi
+}
+restart() {
+  stop
+  start
+  echo "service restarted"
+}
+status() {
+  # 检查pid file是否存在
+  if [ -f $PIDFILE ]; then
+    PID=`cat $PIDFILE`
+    # 检查pid file是否存在pid
+    if [ -z $PID ] ; then
+      echo "No effective pid but pidfile exists!"
+    else
+      # 检查pid对应的进程是否还存在
+      if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
+        echo "Process dead but pidfile exist"
+      else
+        echo "Running"
+        echo "service pid is $PID" 
+      fi
+    fi
+  else
+    echo "$SERVICE_NAME is not running"
+  fi
+}
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    restart
+    ;;
+  status)
+    status
+    ;;
+  *)
+    echo "Usage: $SERVICE_NAME {start|stop|restart|status}"
+    ;;
+esac
