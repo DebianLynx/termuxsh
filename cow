@@ -1,9 +1,13 @@
 #!/bin/bash
 SERVICE_NAME="cow"
+DIR="/data/data/com.termux/files/home"
+PIDDIR="/data/data/com.termux/files/home/run"
+LOGDIR="/data/data/com.termux/files/home/log"
+
+
+PIDFILE="${PIDDIR}/${SERVICE_NAME}.PID"
 RETVAL=0
 PID=-1
-PIDFILE="/data/data/com.termux/files/home/run/${SERVICE_NAME}.PID"
-DIR="/data/data/com.termux/files/home"
 start() {
  if [ -f $PIDFILE ]; then
     PID=`cat $PIDFILE`
@@ -20,19 +24,19 @@ start() {
         echo "deleting pidfile"
         rm -f $PIDFILE
       else
-        echo "Service is Running"
+        echo "${SERVICE_NAME} is areadly Running"
         exit
       fi
     fi
   else
-    echo "Service not running"
+    echo "${SERVICE_NAME} not running"
   fi
   echo "Starting service ${SERVICE_NAME} ..."
+  
+  cd $DIR
+  ./cow  >${LOGDIR}/${SERVICE_NAME}.log 2>&1 &
   # >/dev/null 2>&1 表示不输出stdout和stderr
   # 最后一个 & 表示整个命令在后台执行
-  cd $DIR
-  mkdir $DIR/log
-  ./cow  >$DIR/log/${SERVICE_NAME}.log 2>&1 &
   PID=$!  # 获取本shell启动的最后一个后台程序的进程号（PID）
   if [ -z ${PID} ]; then # 检查有没有获取到pid
     echo "unable to start the process"
@@ -53,14 +57,17 @@ start() {
     else
       # 检查pid对应的进程是否还存在
       if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
-      echo "but process dead after start up"
-      exit
+        echo "but process dead after start up"
+        echo "maybe the process killed itself"
+        echo "you can check the log at ${LOGDIR} "
+        exit
       else
         exit
       fi
     fi
   else
-    echo "you don't have enough access to /var/run"
+    echo "you don't have enough access to ${PIDDIR}"
+    echo "or it dosen't exist"
     exit
   fi
 
@@ -82,7 +89,6 @@ stop() {
       stop
     else
       kill -9 $PID
-      echo "service is running"
       echo "Stopping service successfully , whose pid is $PID"
       rm -f $PIDFILE
     fi
@@ -105,7 +111,7 @@ status() {
     else
       # 检查pid对应的进程是否还存在
       if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
-        echo "Process dead but pidfile exist"
+        echo "Process dead"
       else
         echo "Running"
         echo "service pid is $PID" 
