@@ -61,7 +61,10 @@ start() {
       if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
         echo -e "\033[31m but process dead after start up \033[0m"
         echo "maybe the process killed itself"
-        echo "you can check the log at ${LOGDIR} "
+        echo -e "\033[31m displaying the log \033[0m"
+        echo "  "
+        echo "  "
+        echo "`cat $LOGFILE`"
         exit
       else
         exit
