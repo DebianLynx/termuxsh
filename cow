@@ -1,10 +1,11 @@
 #!/bin/bash
 SERVICE_NAME="cow"
+CMD="./cow
 DIR="/data/data/com.termux/files/home"
 PIDDIR="/data/data/com.termux/files/home/run"
 LOGDIR="/data/data/com.termux/files/home/log"
-CMD="./cow"
-
+#if you don't want to use the log
+#you can fill in the logdir with /dev/null
 
 PIDFILE="${PIDDIR}/${SERVICE_NAME}.PID"
 LOGFILE="${LOGDIR}/${SERVICE_NAME}.log"
@@ -37,12 +38,12 @@ start() {
   
   cd $DIR
   ${CMD}  >${LOGFILE} 2>&1 &
-  # >/dev/null 2>&1 表示不输出stdout和stderr
+  # >${LOGFILE} 2>&1 表示输出stdout和stderr
   # 最后一个 & 表示整个命令在后台执行
   PID=$!  # 获取本shell启动的最后一个后台程序的进程号（PID）
   if [ -z ${PID} ]; then # 检查有没有获取到pid
     echo "unable to start the process"
-    echo -e "\033[31m Failed to get the process id, exit!! \033[0m"
+    echo -e "\033[31m Failed to get the process id,exit!! \033[0m"
     exit
   else
     echo -e "\033[32m Starting successfully, whose pid is ${PID} \033[0m"
@@ -110,7 +111,7 @@ restart() {
   echo "service restarted"
 }
 log() {
-  if [ -f $LOGFILE ]; then # 检查PIDFILE是否存在
+  if [ -f $LOGFILE ]; then # 检查LOGFILE是否存在
     echo `cat ${LOGFILE}`
   else 
     echo "logfile doesn't exist！！"
