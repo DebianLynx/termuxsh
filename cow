@@ -6,7 +6,7 @@ LOGDIR="/data/data/com.termux/files/home/log"
 
 
 PIDFILE="${PIDDIR}/${SERVICE_NAME}.PID"
-LOGFILE="${LOGDIR}/${SERVICE_NAME}.LOG"
+LOGFILE="${LOGDIR}/${SERVICE_NAME}.log"
 RETVAL=0
 PID=-1
 start() {
