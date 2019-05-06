@@ -19,7 +19,7 @@ start() {
     else
       # 检查pid对应的进程是否还存在
       if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
-        echo "Process dead but pidfile exist"
+        echo -e "\033[33m Process dead but pidfile exist \033[0m"
         echo "it means process was closed unnormally"
         echo "deleting pidfile"
         rm -f $PIDFILE
@@ -29,7 +29,7 @@ start() {
       fi
     fi
   else
-    echo "${SERVICE_NAME} not running"
+    echo "checked ${SERVICE_NAME} is not running"
   fi
   echo "Starting service ${SERVICE_NAME} ..."
   
@@ -40,10 +40,10 @@ start() {
   PID=$!  # 获取本shell启动的最后一个后台程序的进程号（PID）
   if [ -z ${PID} ]; then # 检查有没有获取到pid
     echo "unable to start the process"
-    echo "Failed to get the process id, exit!"
+    echo -e "\033[31m Failed to get the process id, exit!! \033[0m"
     exit
   else
-    echo "Starting successfully, whose pid is ${PID}"
+    echo -e "\033[32m Starting successfully, whose pid is ${PID} \033[0m"
   fi
   touch $PIDFILE
   echo ${PID} > ${PIDFILE}
@@ -57,7 +57,7 @@ start() {
     else
       # 检查pid对应的进程是否还存在
       if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
-        echo "but process dead after start up"
+        echo -e "\033[31m but process dead after start up \033[0m"
         echo "maybe the process killed itself"
         echo "you can check the log at ${LOGDIR} "
         exit
@@ -66,8 +66,11 @@ start() {
       fi
     fi
   else
+    echo -e "\033[31m creating PIDfile failed \033[0m"
     echo "you don't have enough access to ${PIDDIR}"
     echo "or it dosen't exist"
+    echo "stoping ${SERVICE_NAME} "
+    kill -9 $PID
     exit
   fi
 
@@ -83,7 +86,7 @@ stop() {
     fi
     # 检查该进程是否存在
     if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
-      echo "Process dead but pidfile exists!"
+      echo -e "\033[33m Process dead but pidfile exist \033[0m"
       echo "deleting pidflie"
       rm -f $PIDFILE
       stop
@@ -111,7 +114,7 @@ status() {
     else
       # 检查pid对应的进程是否还存在
       if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
-        echo "Process dead"
+        echo -e "\033[33m Process dead \033[0m"
       else
         echo "Running"
         echo "service pid is $PID" 
