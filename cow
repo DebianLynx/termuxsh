@@ -1,6 +1,6 @@
 #!/bin/bash
 SERVICE_NAME="cow"
-CMD="./cow
+CMD="./cow"
 DIR="/data/data/com.termux/files/home"
 PIDDIR="/data/data/com.termux/files/home/run"
 LOGDIR="/data/data/com.termux/files/home/log"
