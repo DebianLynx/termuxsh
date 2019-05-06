@@ -6,6 +6,7 @@ LOGDIR="/data/data/com.termux/files/home/log"
 
 
 PIDFILE="${PIDDIR}/${SERVICE_NAME}.PID"
+LOGFILE="${LOGDIR}/${SERVICE_NAME}.LOG"
 RETVAL=0
 PID=-1
 start() {
@@ -29,12 +30,12 @@ start() {
       fi
     fi
   else
-    echo "checked ${SERVICE_NAME} is not running"
+    echo "${SERVICE_NAME} is not running ... checked"
   fi
   echo "Starting service ${SERVICE_NAME} ..."
   
   cd $DIR
-  ./cow  >${LOGDIR}/${SERVICE_NAME}.log 2>&1 &
+  ./cow  >${LOGFILE} 2>&1 &
   # >/dev/null 2>&1 表示不输出stdout和stderr
   # 最后一个 & 表示整个命令在后台执行
   PID=$!  # 获取本shell启动的最后一个后台程序的进程号（PID）
@@ -104,6 +105,13 @@ restart() {
   start
   echo "service restarted"
 }
+log() {
+  if [ -f $LOGFILE ]; then # 检查PIDFILE是否存在
+    echo `cat ${LOGFILE}`
+  else 
+    echo "logfile doesn't exist！！"
+  fi
+}
 status() {
   # 检查pid file是否存在
   if [ -f $PIDFILE ]; then
@@ -134,10 +142,13 @@ case "$1" in
   restart)
     restart
     ;;
+  log)
+    log
+    ;;
   status)
     status
     ;;
   *)
-    echo "Usage: $SERVICE_NAME {start|stop|restart|status}"
+    echo "Usage: $SERVICE_NAME {start|stop|restart|status|log}"
     ;;
 esac
