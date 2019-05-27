@@ -1,22 +1,45 @@
 #!/bin/bash
-SERVICE_NAME="service"
+SERVICE_NAME="ExampleService"
 DIR="/data/data/com.termux/files/home/bin"
 CMD="./test"
 CMDELSE=""
 PIDCMD=""
-PIDDIR="/data/data/com.termux/files/home/.run"
-LOGDIR="/data/data/com.termux/files/home/.log"
+PIDDIR="/data/data/com.termux/files/usr/var/run"
+LOGDIR="/data/data/com.termux/files/usr/var/log"
+
+if [ -z $1 ]; then
+   echo "This is a service manager writen by DebianLynx"
+   echo "Usage: service  $SERVICE_NAME  {start|stop|restart|status|log}"
+fi
+#input the service info
 if [ -f /data/data/com.termux/files/usr/etc/service/$1 ]; then
    source /data/data/com.termux/files/usr/etc/service/$1
 else
     echo "service  $1 doesn’t exist "
     exit
 fi 
+
 PIDFILE="${PIDDIR}/${SERVICE_NAME}.PID"
 LOGFILE="${LOGDIR}/${SERVICE_NAME}.log"
 USEPIDCMD="${PIDCMD} ${PIDFILE}"
 RETVAL=0
 PID=-1
+
+#check the dir
+if [ -z $PIDDIR ]; then
+    echo "The piddir ${PIDDIR} doesn't exist"
+    if [ -z $LOGDIR ]; then
+        echo "The logdir${LOGDIR} doesn't exist"
+    fi
+    exit
+fi
+
+if [ -z $LOGDIR ]; then
+    echo "The logdir${LOGDIR} doesn't exist"
+    echo -e "\033[31m continue without the log \033[0m"
+    LOGDIR="/dev/null"
+fi
+
 start() {
 if [ -f $PIDFILE ]; then
     PID=`cat $PIDFILE`
@@ -127,6 +150,11 @@ restart() {
   echo "service restarted"
 }
 log() {
+  if [ "$LOGDIR" == "/dev/null*" ]; then # 检查LOGFILE是否存在
+    echo "you are not using the log"
+    exit
+  fi
+  
   if [ -f $LOGFILE ]; then # 检查LOGFILE是否存在
     echo `cat ${LOGFILE}`
   else 
