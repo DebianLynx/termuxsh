@@ -1,5 +1,10 @@
 apt update
 apt install git
+
+if [ -d ./termuxsh ]; then
+    rm -rf ./termuxsh 
+fi 
+
 git clone https://github.com/DebianLynx/termuxsh.git
 cd termuxsh
 chmod +x service 
