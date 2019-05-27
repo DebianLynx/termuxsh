@@ -11,7 +11,7 @@ chmod +x service
 mv ./service /data/data/com.termux/files/usr/bin/
 
 if [ -d /data/data/com.termux/files/usr/etc/service ]; then
-    echo "service dir areadly created,maybe it's a update install"
+    echo "service dir areadly created,maybe it's an update install"
 else
     mkdir /data/data/com.termux/files/usr/etc/service
 fi 
