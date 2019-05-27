@@ -27,19 +27,19 @@ RETVAL=0
 PID=-1
 
 #check the dir
-if [ -z $PIDDIR ]; then
-    echo "The piddir ${PIDDIR} doesn't exist"
-    if [ -z $LOGDIR ]; then
-        echo "The logdir ${LOGDIR} doesn't exist"
+if [ -d $PIDDIR ]; then    
+    if [ -d $LOGDIR ]; then
+      echo "logfile is enabled"
+    else
+      echo "The logdir ${LOGDIR} doesn't exist"
+      echo -e "\033[31m continue without the log \033[0m"
+      LOGDIR="/dev/null"
     fi
-    exit
+    else
+      echo "The piddir ${PIDDIR} doesn't exist, exit"
+      exit
 fi
 
-if [ -z $LOGDIR ]; then
-    echo "The logdir ${LOGDIR} doesn't exist"
-    echo -e "\033[31m continue without the log \033[0m"
-    LOGDIR="/dev/null"
-fi
 
 start() {
 if [ -f $PIDFILE ]; then
