@@ -10,16 +10,17 @@ LOGDIR="/data/data/com.termux/files/usr/var/log"
 if [ -z $1 ]; then
    echo "This is a service manager writen by DebianLynx"
    echo "Usage: service  $SERVICE_NAME  {start|stop|restart|status|log}"
+   exit
 fi
 #input the service info
 if [ -f /data/data/com.termux/files/usr/etc/service/$1 ]; then
    source /data/data/com.termux/files/usr/etc/service/$1
 else
-    echo "service  $1 doesn’t exist "
+    echo "service $1 doesn’t exist "
     exit
 fi 
 
-PIDFILE="${PIDDIR}/${SERVICE_NAME}.PID"
+PIDFILE="${PIDDIR}/${SERVICE_NAME}.pid"
 LOGFILE="${LOGDIR}/${SERVICE_NAME}.log"
 USEPIDCMD="${PIDCMD} ${PIDFILE}"
 RETVAL=0
@@ -29,13 +30,13 @@ PID=-1
 if [ -z $PIDDIR ]; then
     echo "The piddir ${PIDDIR} doesn't exist"
     if [ -z $LOGDIR ]; then
-        echo "The logdir${LOGDIR} doesn't exist"
+        echo "The logdir ${LOGDIR} doesn't exist"
     fi
     exit
 fi
 
 if [ -z $LOGDIR ]; then
-    echo "The logdir${LOGDIR} doesn't exist"
+    echo "The logdir ${LOGDIR} doesn't exist"
     echo -e "\033[31m continue without the log \033[0m"
     LOGDIR="/dev/null"
 fi
