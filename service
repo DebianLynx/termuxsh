@@ -1,0 +1,175 @@
+#!/bin/bash
+SERVICE_NAME="service"
+DIR="/data/data/com.termux/files/home/bin"
+CMD="./test"
+CMDELSE=""
+PIDCMD=""
+PIDDIR="/data/data/com.termux/files/home/.run"
+LOGDIR="/data/data/com.termux/files/home/.log"
+if [ -f /data/data/com.termux/files/usr/etc/service/$1 ]; then
+   source /data/data/com.termux/files/usr/etc/service/$1
+else
+    echo "service  $1 doesn’t exist "
+    exit
+fi 
+PIDFILE="${PIDDIR}/${SERVICE_NAME}.PID"
+LOGFILE="${LOGDIR}/${SERVICE_NAME}.log"
+USEPIDCMD="${PIDCMD} ${PIDFILE}"
+RETVAL=0
+PID=-1
+start() {
+if [ -f $PIDFILE ]; then
+    PID=`cat $PIDFILE`
+    # 检查pid file是否存在pid
+    if [ -z $PID ] ; then
+      echo "No effective pid but pidfile exists!"
+      echo "deleting pidfile"  
+      rm -f $PIDFILE
+    else
+      # 检查pid对应的进程是否还存在
+      if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
+        echo -e "\033[33m Process dead but pidfile exist \033[0m"
+        echo "it means process was closed unnormally"
+        echo "deleting pidfile"
+        rm -f $PIDFILE
+      else
+        echo "${SERVICE_NAME} is areadly Running"
+        exit
+      fi
+    fi
+  else
+    echo "${SERVICE_NAME} is not running ... checked"
+  fi
+  echo "Starting service ${SERVICE_NAME} ..."
+  
+  cd $DIR
+  if [ -z "${PIDCMD}" ]; then 
+    USEPIDCMD=""
+  fi
+	
+touch $PIDFILE
+
+${CMD} ${USEPIDCMD} ${CMDELSE} >${LOGFILE} 2>&1 &
+
+  # >${LOGFILE} 2>&1 表示输出stdout和stderr
+  # 最后一个 & 表示整个命令在后台执行
+  PID=$!  # 获取本shell启动的最后一个后台程序的进程号（PID）
+  if [ -z ${PID} ]; then # 检查有没有获取到pid
+    echo "unable to start the process"
+    echo -e "\033[31m Failed to get the process id,exit!! \033[0m"
+    exit
+  else
+    echo -e "\033[32m Starting successfully, whose pid is ${PID} \033[0m"
+  fi
+  if [ -z "${PIDCMD}" ]; then 
+    echo ${PID} > ${PIDFILE}
+  else
+    echo "useing program its own pid writes"
+  fi
+ if [ -f $PIDFILE ]; then
+    PID=`cat $PIDFILE`
+    # 检查pid file是否存在pid
+    if [ -z $PID ] ; then
+      echo "program is still writing PIDfile"
+	  echo "check later"
+      exit
+    else
+      # 检查pid对应的进程是否还存在
+      if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
+        echo -e "\033[31m but process dead after start up \033[0m"
+        echo "maybe the process killed itself"
+        echo -e "\033[31m displaying the log \033[0m"
+        echo "  "
+        echo "  "
+        echo "`cat $LOGFILE`"
+        exit
+      else
+        exit
+      fi
+    fi
+  else
+    echo -e "\033[31m creating PIDfile failed \033[0m"
+    echo "you don't have enough access to ${PIDDIR}"
+    echo "or it dosen't exist"
+    echo "stoping ${SERVICE_NAME} "
+    kill -9 $PID
+    exit
+  fi
+
+}
+stop() {
+  if [ -f $PIDFILE ]; then # 检查PIDFILE是否存在
+    PID=`cat ${PIDFILE}`
+    if [ -z $PID ]; then # 检查PID是否存在于PIDFILE中
+      echo "PIDFILE $PIDFILE is empty !"
+      echo "deleting pidflie"
+      rm -f $PIDFILE
+      stop
+    fi
+    # 检查该进程是否存在
+    if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
+      echo -e "\033[33m Process dead but pidfile exist \033[0m"
+      echo "deleting pidflie"
+      rm -f $PIDFILE
+      stop
+    else
+      kill -9 $PID
+      echo "Stopping service successfully , whose pid is $PID"
+      rm -f $PIDFILE
+    fi
+  else
+    echo "$SERVICE_NAME is not running"
+  fi
+}
+restart() {
+  stop
+  start
+  echo "service restarted"
+}
+log() {
+  if [ -f $LOGFILE ]; then # 检查LOGFILE是否存在
+    echo `cat ${LOGFILE}`
+  else 
+    echo "logfile doesn't exist！！"
+  fi
+}
+status() {
+  # 检查pid file是否存在
+  if [ -f $PIDFILE ]; then
+    PID=`cat $PIDFILE`
+    # 检查pid file是否存在pid
+    if [ -z $PID ] ; then
+      echo "No effective pid but pidfile exists!"
+    else
+      # 检查pid对应的进程是否还存在
+      if [ -z "`ps axf | grep $PID | grep -v grep`" ]; then
+        echo -e "\033[33m Process dead \033[0m"
+      else
+        echo "Running"
+        echo "service pid is $PID" 
+      fi
+    fi
+  else
+    echo "$SERVICE_NAME is not running"
+  fi
+}
+case "$2" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    restart
+    ;;
+  log)
+    log
+    ;;
+  status)
+    status
+    ;;
+  *)
+    echo "Usage: service  $SERVICE_NAME  {start|stop|restart|status|log}"
+    ;;
+esac
