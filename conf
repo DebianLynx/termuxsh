@@ -1,0 +1,139 @@
+#!/bin/bash
+DIR="/data/data/com.termux/files/usr/etc/conf"
+CONF="${DIR}/$2"
+CONFNAME="$2"
+CONFFILENAME=""
+CONFFILEDIR="`pwd`"
+INFODIR="${DIR}/.info"
+LOADCMD=""
+
+save()  {
+    if [ -f "${DIR}/${CONFFILENAME}" ]; then
+	    echo "There is a conf setting with the same name"
+		read -p "Enter y to OVERWRITE:" ENTERY
+	    if [ "${ENTERY}" = "y" ]; then
+		     read -p "Enter the conffile's using name:" CONFFILENAME
+		     rm -rf ${DIR}/${CONFNAME}
+			 rm -rf ${INFODIR}/${CONFNAME}.dir
+		     rm -rf ${INFODIR}/${CONFNAME}.name
+	     	 cp ${CONFFILEDIR}/${CONFFILENAME} ${DIR}/${CONFNAME}
+	         echo ${CONFFILEDIR} >${INFODIR}/${CONFNAME}.dir
+        	 echo ${CONFFILENAME} >${INFODIR}/${CONFNAME}.name
+			 echo -e "\033[32m Done,setting ${CONFNAME} saved \033[0m"
+	    else
+			 echo "exit"
+		     exit
+		fi
+	else
+	    read -p "Enter the conffile's using name:" CONFFILENAME
+        CONFFILEDIR="`pwd`"
+	    cp ${CONFFILEDIR}/${CONFFILENAME} ${DIR}/${CONFNAME}
+	    echo ${CONFFILEDIR} >${INFODIR}/${CONFNAME}.dir
+        echo ${CONFFILENAME} >${INFODIR}/${CONFNAME}.name
+		echo -e "\033[32m Done,setting ${CONFNAME} saved \033[0m"
+		echo ""
+    fi
+}
+del()  {
+
+    if [ -f "${DIR}/${CONFNAME}" ]; then
+	    read -p "Enter y to Delete ${CONFNAME}:" ENTERY
+		if [ "${ENTERY}" = "y" ]; then
+		     rm -rf ${DIR}/${CONFNAME}
+			 rm -rf ${INFODIR}/${CONFNAME}.dir
+		     rm -rf ${INFODIR}/${CONFNAME}.name
+			 if  [ -f "${INFODIR}/${CONFNAME}.load" ]; then
+			     rm -rf ${INFODIR}/${CONFNAME}.load
+			 fi
+             echo -e "\033[32m Done,setting ${CONFNAME} deleted \033[0m"
+	    else
+			 echo "exit"
+		     exit
+		fi
+	else
+        echo "conf setting ${CONFNAME} doesn't exist"	
+		exit
+    fi
+}
+use()  {
+    if [ -f "${DIR}/${CONFNAME}" ]; then
+	    CONFFILENAME="`cat ${INFODIR}/${CONFNAME}.name`"
+        CONFFILEDIR="`cat ${INFODIR}/${CONFNAME}.dir`"
+        rm -rf ${CONFFILEDIR}/${CONFFILENAME}
+		cp ${DIR}/${CONFNAME} ${CONFFILEDIR}/${CONFFILENAME}
+		echo -e "\033[32m done! \033[0m"
+	else
+	    echo "no such conf setting"
+		
+	fi	
+}
+list()  {
+cd ${DIR}
+LISTCONF=$(ls *)
+for LIST in ${LISTCONF};do
+    echo -e "\033[32m ${LIST} \033[0m"
+	echo "`cat ${INFODIR}/${LIST}.dir`/`cat ${INFODIR}/${LIST}.name`"
+	echo ""
+done
+}
+load()  {
+    if [ -f "${DIR}/${CONFNAME}" ]; then
+	    if  [ -f "${INFODIR}/${CONFNAME}.load" ]; then
+		    LOADCMD="`cat ${INFODIR}/${CONFNAME}.load`"
+	        CONFFILENAME="`cat ${INFODIR}/${CONFNAME}.name`"
+            CONFFILEDIR="`cat ${INFODIR}/${CONFNAME}.dir`"
+            rm -rf ${CONFFILEDIR}/${CONFFILENAME}
+		    cp ${DIR}/${CONFNAME} ${CONFFILEDIR}/${CONFFILENAME}
+			${LOADCMD}
+		    echo -e "\033[32m LOAD CONF done! \033[0m"
+		else
+		    echo "no reload command"
+			read -p "Enter reload command:" LOADCMD
+			echo ${LOADCMD} > ${INFODIR}/${CONFNAME}.load
+			echo -e "\033[32m saved! \033[0m"
+			read -p "Enter y to test reload command:" ENTERY
+			if [ "${ENTERY}" = "y" ]; then
+			    ${LOADCMD}
+				read -p "Enter y if it's fine:" ENTERY
+				if [ "${ENTERY}" = "y" ]; then
+				    echo "done"
+					exit
+				else
+				    rm -rf ${INFODIR}/${CONFNAME}.load
+				    echo "Reload command deleted"
+				    echo "Maybe you could check it out"
+				    echo "And enter it later"
+				fi
+			else
+			    echo "exit with out reload"
+				exit
+		    fi
+		fi
+	else
+	    echo "no such conf setting"
+		
+	fi	
+}
+
+
+case "$1" in
+  save)
+    save
+    ;;
+  del)	
+    del
+    ;;
+  use)
+    use
+	;;
+  load)
+    load
+    ;;
+  list)
+    list
+    ;;
+  *)
+    echo "Usage: conf {save|del|load|list} ConfName"
+    ;;
+esac
+
