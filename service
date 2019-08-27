@@ -6,7 +6,7 @@ CMDELSE=""
 PIDCMD=""
 PIDDIR="/data/data/com.termux/files/usr/var/run"
 LOGDIR="/data/data/com.termux/files/usr/var/log"
-ENABLE="/data/data/com.termux/files/usr/etc/service/enabled/"
+ENABLE="/data/data/com.termux/files/usr/etc/service/.enabled"
 
 if [ -z $1 ]; then
    echo "This is a service manager writen by DebianLynx"
@@ -23,7 +23,7 @@ fi
 
 PIDFILE="${PIDDIR}/${SERVICE_NAME}.pid"
 LOGFILE="${LOGDIR}/${SERVICE_NAME}.log"
-ENABLEFILE="/data/data/com.termux/files/usr/etc/service/enabled/${SERVICE_NAME}.sh"
+ENABLEFILE="=${ENABLE}/${SERVICE_NAME}.sh"
 USEPIDCMD="${PIDCMD} ${PIDFILE}"
 ENABLECMD="service ${SERVICE_NAME} start"
 ASKYES="no"
@@ -203,7 +203,7 @@ enable() {
       exit
     fi
   fi
-  grep "bash /data/data/com.termux/files/usr/etc/service/enabled/*.sh" /data/data/com.termux/files/home/.bashrc > /dev/null
+  grep "bash /data/data/com.termux/files/usr/etc/service/.enabled/*.sh" /data/data/com.termux/files/home/.bashrc > /dev/null
   if [ $? -eq 0 ]; then
     echo "check complate"
   else
