@@ -203,7 +203,7 @@ enable() {
       exit
     fi
   fi
-  grep "bash /data/data/com.termux/files/usr/etc/service/.enabled/*.sh" /data/data/com.termux/files/home/.bashrc > /dev/null
+  grep "for f in /data/data/com.termux/files/usr/etc/service/.enabled/*.sh ;bash $f" /data/data/com.termux/files/home/.bashrc > /dev/null
   if [ $? -eq 0 ]; then
     echo "check complate"
   else
