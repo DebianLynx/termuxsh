@@ -195,7 +195,6 @@ enable() {
     touch $ENABLEFILE
     echo ${ENABLECMD} > ${ENABLEFILE}
     chmod +x $ENABLEFILE
-    echo "start the ${SERVICE_NAME} now? "
     read -p "start the ${SERVICE_NAME} now?:(yes/no)" ASKYES
     if [ "${ASKYES}" = "yes" ]; then
       start
