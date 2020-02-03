@@ -19,7 +19,7 @@ if [ -f /data/data/com.termux/files/usr/etc/service/$1 ]; then
 else
     echo "service $1 doesn’t exist "
     exit
-fi 
+fi
 
 PIDFILE="${PIDDIR}/${SERVICE_NAME}.pid"
 LOGFILE="${LOGDIR}/${SERVICE_NAME}.log"
@@ -31,7 +31,7 @@ RETVAL=0
 PID=-1
 
 #check the dir
-if [ -d $PIDDIR ]; then    
+if [ -d $PIDDIR ]; then
     if [ -d $LOGDIR ]; then
       echo "logfile is enabled"
     else
@@ -51,7 +51,7 @@ if [ -f $PIDFILE ]; then
     # 检查pid file是否存在pid
     if [ -z $PID ] ; then
       echo "No effective pid but pidfile exists!"
-      echo "deleting pidfile"  
+      echo "deleting pidfile"
       rm -f $PIDFILE
     else
       # 检查pid对应的进程是否还存在
@@ -69,12 +69,11 @@ if [ -f $PIDFILE ]; then
     echo "${SERVICE_NAME} is not running ... checked"
   fi
   echo "Starting service ${SERVICE_NAME} ..."
-  
   cd $DIR
   if [ -z "${PIDCMD}" ]; then 
     USEPIDCMD=""
   fi
-	
+
 touch $PIDFILE
 
 ${CMD} ${USEPIDCMD} ${CMDELSE} >${LOGFILE} 2>&1 &
@@ -89,7 +88,7 @@ ${CMD} ${USEPIDCMD} ${CMDELSE} >${LOGFILE} 2>&1 &
   else
     echo -e "\033[32m Starting successfully, whose pid is ${PID} \033[0m"
   fi
-  if [ -z "${PIDCMD}" ]; then 
+  if [ -z "${PIDCMD}" ]; then
     echo ${PID} > ${PIDFILE}
   else
     echo "useing program its own pid writes"
